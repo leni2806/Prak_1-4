@@ -1201,3 +1201,47 @@ public function logout()
     return redirect()->to('/user/login');
 }
 ```
+
+
+
+# Praktikum 5
+
+## 🚀 Fitur Terbaru 
+* [cite_start]**Pagination:** Membatasi tampilan data agar tidak terlalu panjang, diset sebanyak 10 record per halaman[cite: 22].
+* [cite_start]**Pencarian (Filtering):** Fitur untuk mencari artikel berdasarkan judul menggunakan kata kunci tertentu[cite: 71, 84].
+* [cite_start]**Persistent Search:** Pencarian tetap tersimpan saat berpindah halaman navigasi (pagination)[cite: 98].
+
+---
+
+## 🛠️ Langkah-Langkah Praktikum 5
+
+### 1. Implementasi Pagination & Pencarian di Controller
+[cite_start]Modifikasi pada method `admin_index` di `Artikel.php` untuk menangani pengambilan variabel query `q` dan penggunaan method `paginate()`[cite: 15, 74].
+
+### 2. Update Tampilan Admin
+* [cite_start]Menambahkan form pencarian dengan method `GET` sebelum tabel data[cite: 90, 94].
+* [cite_start]Menambahkan navigasi `pager` di bawah tabel untuk berpindah halaman[cite: 29, 30].
+
+---
+
+## 📸 Dokumentasi Praktikum
+
+### Tampilan Pagination
+[cite_start]Pagination memecah tampilan menjadi beberapa halaman tergantung banyaknya data yang ditampilkan pada setiap halaman[cite: 13, 66].
+<img src="img/page.png" width="450">
+
+### Tampilan Fitur Pencarian
+[cite_start]Pencarian data digunakan untuk memfilter data berdasarkan judul yang diinputkan user[cite: 71, 135].
+<img src="img/cari.png" width="450">
+
+---
+
+## 💻 Cara Menjalankan
+1. Pastikan server lokal menyala (`php spark serve`).
+2. Akses halaman admin di `localhost:8080/admin/artikel`.
+3. Gunakan kolom pencarian untuk memfilter data.
+4. [cite_start]Jika data lebih dari 10, navigasi halaman akan muncul di bawah tabel[cite: 22].
+
+---
+[cite_start]**Instansi:** Universitas Pelita Bangsa [cite: 32]  
+[cite_start]**Mata Kuliah:** Pemrograman Web 2 [cite: 1]
