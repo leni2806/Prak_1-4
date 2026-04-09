@@ -3,21 +3,26 @@
 namespace App\Controllers;
 
 use App\Models\ArtikelModel;
-use CodeIgniter\Exceptions\PageNotFoundException; 
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Artikel extends BaseController
 {
-    // 1. Menampilkan daftar artikel untuk pengunjung (User)
+    // Menampilkan daftar artikel untuk pengunjung (User)
     public function index()
     {
         $title = 'Daftar Artikel';
         $model = new ArtikelModel();
-        $artikel = $model->findAll();
+        // Pagination juga bisa diterapkan di sini jika artikel sudah banyak
+        $artikel = $model->paginate(10); 
         
-        return view('artikel/index', compact('artikel', 'title'));
+        return view('artikel/index', [
+            'artikel' => $artikel,
+            'title'   => $title,
+            'pager'   => $model->pager
+        ]);
     }
 
-    // 2. Menampilkan isi artikel lengkap berdasarkan SLUG
+    // Menampilkan isi artikel lengkap berdasarkan SLUG
     public function view($slug) 
     { 
         $model = new ArtikelModel(); 
@@ -31,20 +36,28 @@ class Artikel extends BaseController
         return view('artikel/detail', compact('artikel', 'title')); 
     }
 
-    // 3. Menampilkan tabel manajemen artikel (Admin)
     public function admin_index()  
     { 
         $title = 'Daftar Artikel'; 
         $model = new ArtikelModel();
-        $artikel = $model->findAll(); 
+
+        // Mengambil query pencarian dari input 'q' [cite: 77, 82]
+        $q = $this->request->getVar('q') ?? ''; 
+
+        $data = [
+            'title'   => $title,
+            'q'       => $q,
+            // Mencari judul yang mirip dengan $q dan membagi 10 data per halaman [cite: 22, 84]
+            'artikel' => $model->like('judul', $q)->paginate(10), 
+            'pager'   => $model->pager // Mengambil library navigasi halaman [cite: 25, 86]
+        ];
         
-        return view('artikel/admin_index', compact('artikel', 'title')); 
+        return view('artikel/admin_index', $data); 
     } 
 
-    // 4. Fungsi untuk Tambah Artikel Baru
+    // Fungsi untuk Tambah Artikel Baru
     public function add() 
     { 
-        // Validasi: Judul wajib diisi
         $validation = \Config\Services::validation(); 
         $validation->setRules(['judul' => 'required']); 
         $isDataValid = $validation->withRequest($this->request)->run(); 
@@ -64,39 +77,32 @@ class Artikel extends BaseController
         return view('artikel/form_add', compact('title')); 
     } 
 
+    // Fungsi untuk Edit Artikel
     public function edit($id)  
-{ 
-    $artikel = new ArtikelModel(); 
-
-    // 1. Validasi data
-    $validation = \Config\Services::validation(); 
-    $validation->setRules(['judul' => 'required']); 
-    $isDataValid = $validation->withRequest($this->request)->run(); 
-
-    // 2. Jika tombol Simpan diklik dan data valid, lakukan update
-    if ($isDataValid) 
     { 
-        $artikel->update($id, [ 
-            'judul' => $this->request->getPost('judul'), 
-            'isi'   => $this->request->getPost('isi'), 
-            // Opsional: update slug jika judul berubah
-            'slug'  => url_title($this->request->getPost('judul'), '-', true),
-        ]); 
-        return redirect()->to('/admin/artikel'); 
-    } 
+        $artikel = new ArtikelModel(); 
+        $validation = \Config\Services::validation(); 
+        $validation->setRules(['judul' => 'required']); 
+        $isDataValid = $validation->withRequest($this->request)->run(); 
 
-    // 3. Ambil data lama dari database untuk ditampilkan di form
-    $data = $artikel->where('id', $id)->first(); 
-    
-    if (!$data) {
-        throw PageNotFoundException::forPageNotFound();
+        if ($isDataValid) 
+        { 
+            $artikel->update($id, [ 
+                'judul' => $this->request->getPost('judul'), 
+                'isi'   => $this->request->getPost('isi'), 
+                'slug'  => url_title($this->request->getPost('judul'), '-', true),
+            ]); 
+            return redirect()->to('/admin/artikel'); 
+        } 
+
+        $data = $artikel->where('id', $id)->first(); 
+        if (!$data) throw PageNotFoundException::forPageNotFound();
+
+        $title = "Edit Artikel"; 
+        return view('artikel/form_edit', compact('title', 'data')); 
     }
 
-    $title = "Edit Artikel"; 
-    return view('artikel/form_edit', compact('title', 'data')); 
-}
-
-    // 5. Fungsi untuk Hapus Artikel
+    // Fungsi untuk Hapus Artikel
     public function delete($id) 
     { 
         $artikel = new ArtikelModel(); 
